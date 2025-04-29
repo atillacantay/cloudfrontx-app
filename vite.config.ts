@@ -12,6 +12,13 @@ export default defineConfig({
       "~": path.resolve(__dirname, "src"),
     },
   },
+  build: {
+    outDir: "../shop-aws-backend/resources/build",
+    emptyOutDir: true,
+  },
+  server: {
+    port: 3008,
+  },
   plugins: [react()],
   test: {
     globals: true,
