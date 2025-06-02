@@ -5,6 +5,11 @@ import axios from "axios";
 import { Button, CircularProgress } from "@mui/material";
 import { Alert } from "@mui/material";
 import { Close, CloudUpload } from "@mui/icons-material";
+import {
+  createBasicAuthHeader,
+  isAuthError,
+  getAuthErrorMessage,
+} from "~/config/auth";
 
 type CSVFileImportProps = {
   url: string;
@@ -53,6 +58,9 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
         params: {
           name: encodeURIComponent(file.name),
         },
+        headers: {
+          Authorization: createBasicAuthHeader(),
+        },
       });
 
       console.log("File to upload:", file.name);
@@ -76,9 +84,21 @@ export default function CSVFileImport({ url, title }: CSVFileImportProps) {
     } catch (error) {
       console.error("Error uploading file:", error);
       setIsError(true);
-      setErrorMessage(
-        error instanceof Error ? error.message : "Failed to upload file"
-      );
+
+      if (
+        axios.isAxiosError(error) &&
+        error.response &&
+        isAuthError(error.response.status)
+      ) {
+        setErrorMessage(getAuthErrorMessage(error.response.status));
+        alert(
+          `Authentication Error: ${getAuthErrorMessage(error.response.status)}`
+        );
+      } else {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Failed to upload file"
+        );
+      }
     } finally {
       setIsLoading(false);
     }
